@@ -2,7 +2,7 @@ import os
 import re
 import argparse
 
-def reformat(filepath,path_root):
+def reformat(filepath,path_ending):
     
     filename = os.path.basename(filepath)
     pattern = r"^[0-9]*"
@@ -19,7 +19,7 @@ def reformat(filepath,path_root):
 
     temp_path = filepath
     parent_node = ""
-    while parent_node != path_root:
+    while parent_node != path_ending:
         temp_path = os.path.dirname(temp_path)
         parent_node = os.path.basename(temp_path)
         filename = parent_node + " " + filename

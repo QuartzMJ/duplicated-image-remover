@@ -23,5 +23,20 @@ def create_table(conn,table):
      print("Database created!")
      # execute queries on the new database
 
+def detect_duplication(dbname):
+    conn = sqlite3.connect(dbname)
+    cursor = conn.cursor()
+    query = "SELECT NAME, FILESIZE, MD5, COUNT(*) as count FROM PIC GROUP BY MD5 HAVING count > 1;"
+    cursor.execute(query)
+    result = cursor.fetchall()
+ 
+    for row in result:
+        print(row)
+    conn.close()
 
 
+def check_existence(MD5,cursor):
+    query = f"SELECT COUNT(*) FROM PIC WHERE MD5 = '{MD5}'"
+    cursor.execute(query)
+    count = cursor.fetchone()[0]
+    return count > 0
