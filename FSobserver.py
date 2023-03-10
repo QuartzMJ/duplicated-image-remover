@@ -3,6 +3,20 @@ import time
 import logging
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
+import reformatter 
+
+class renamer(LoggingEventHandler):
+    def on_created(self,event):
+        super(LoggingEventHandler,self).on_created(event)
+        if event.is_directory:
+            what = 'directory'
+        else:
+            what = 'file'
+        logging.info("Created %s: %s" % (what, event.src_path))
+        extension = event.src_path.split('.')
+        if extension[-1] == "jpg" or extension[-1] == "png":
+            reformatter.reformat(event.src_path)
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,
@@ -13,7 +27,7 @@ if __name__ == "__main__":
     else:
         path = '.'
     
-    event_handler = LoggingEventHandler()
+    event_handler = renamer()
 
     observer = Observer()
 
