@@ -21,12 +21,11 @@ def calculate_md5(filename):
 def calculate_size(file_path):
     return os.path.getsize(file_path)
 
-def process_file(file_path,path_ending):
+def process_file(file_path):
     file_md5 = calculate_md5(file_path)
     file_size = calculate_size(file_path)
-    file_name = reformatter.reformat(file_path,path_ending)
+    file_name = os.path.basename(file_path)
     dir_path = os.path.dirname(file_path)
-    #print("Dir path: %s" %dir_name, "File name: %s" % file_name,"  File size: %s" % (file_size), "File MD5: %s" % (file_md5))
     return file_name,dir_path,file_size,file_md5
 
 
@@ -48,8 +47,8 @@ def main():
     count = 1
     
     for file_path in findFiles(base):
-        file_name,dir_path,file_size,file_md5 = process_file(file_path,path_ending)
-        if not sqlConnector.check_existence(file_md5,cursor):
+        if not sqlConnector.check_existence(file_path,cursor):
+            file_name,dir_path,file_size,file_md5 = process_file(file_path)
             cursor.execute("INSERT INTO PIC (NAME,FILEPATH,FILESIZE,MD5) VALUES (?,?,?,?)",(file_name,dir_path,file_size,file_md5))
             conn.commit()
         print(count)

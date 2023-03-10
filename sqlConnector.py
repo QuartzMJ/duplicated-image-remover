@@ -35,8 +35,13 @@ def detect_duplication(dbname):
     conn.close()
 
 
-def check_existence(MD5,cursor):
-    query = f"SELECT COUNT(*) FROM PIC WHERE MD5 = '{MD5}'"
+def check_existence(file_path,cursor):
+    filename=os.path.basename(file_path)
+    file_path=os.path.dirname(file_path) 
+    query = f"SELECT COUNT(*) FROM PIC WHERE FILEPATH = '{file_path}' AND NAME = '{filename}'"
     cursor.execute(query)
     count = cursor.fetchone()[0]
     return count > 0
+
+def delete_duplication():
+    print("Placeholder for deletion")
