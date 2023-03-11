@@ -30,18 +30,44 @@ def detect_duplication(dbname):
     cursor.execute(query)
     result = cursor.fetchall()
  
+    count = 1
     for row in result:
         print(row)
+        print("Duplication counts: " + str(count))
+        count += 1
     conn.close()
 
 
 def check_existence(file_path,cursor):
     filename=os.path.basename(file_path)
     file_path=os.path.dirname(file_path) 
-    query = f"SELECT COUNT(*) FROM PIC WHERE FILEPATH = '{file_path}' AND NAME = '{filename}'"
-    cursor.execute(query)
+    query = "SELECT COUNT(*) FROM PIC WHERE FILEPATH = ? AND NAME = ?"
+    paras = (file_path,filename)
+    cursor.execute(query,paras)
     count = cursor.fetchone()[0]
     return count > 0
+
+def checkSimilaritySet(file_path,cursor):
+    similarity = str(12345)
+    filename=os.path.basename(file_path)
+    query = "SELECT COUNT(*) FROM PIC WHERE SIMILARITY= ? AND NAME = ?"
+    paras = (similarity,filename)
+    cursor.execute(query,paras)
+    count = cursor.fetchone()[0]
+    return count > 0
+
+def checkColumnExistence(para,cursor):
+    query = "PRAGMA table_info(PIC)"
+    cursor.execute(query)
+    print("testing")
+    columns = [column[1] for column in cursor.fetchall()]
+    if str(para) not in columns:
+       print("Not exists")
+       return False
+    else:
+        print("Exists")
+        return True
+
 
 def delete_duplication():
     print("Placeholder for deletion")
