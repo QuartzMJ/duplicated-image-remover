@@ -18,7 +18,8 @@ def create_table(conn,table):
      NAME           TEXT    NOT NULL,
      FILEPATH       TEXT    NOT NULL,
      FILESIZE       INT     NOT NULL,
-     MD5            TEXT    NOT NULL
+     MD5            TEXT    NOT NULL,
+     SIMILARITY     TEXT    NOT NULL
      );'''.format(table))
      print("Database created!")
      # execute queries on the new database
