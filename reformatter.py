@@ -37,7 +37,8 @@ def reformat(filepath,path_ending):
     dir_path = os.path.dirname(filepath)
     new_filepath = os.path.join(dir_path,filename)
     rename_file(filepath,new_filepath,0)
-    return filename;
+    
+    return new_filepath;
    
 
 def rename_file(filepath, new_filepath,count):

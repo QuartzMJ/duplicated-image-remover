@@ -1,8 +1,9 @@
 import sys
 import time 
 import os
-import argparse
+import sqlite3
 import logging
+import imageUtils
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 import reformatter 
@@ -10,7 +11,7 @@ import reformatter
 class Renamer(LoggingEventHandler):
 
     def __init__(self,path_root):
-        super(Renamer, self).__init__
+        super(Renamer, self).__init__()
         self.path_root = path_root
 
     def on_created(self,event):
@@ -22,20 +23,23 @@ class Renamer(LoggingEventHandler):
         logging.info("Created %s: %s" % (what, event.src_path))
         extension = event.src_path.split('.')
         if extension[-1] == "jpg" or extension[-1] == "png":
-            reformatter.reformat(event.src_path,self.path_root)
+            filename = reformatter.reformat(event.src_path,self.path_root)
+            time.sleep(2)
+            file_name,dir_path,file_size,file_md5 = entries = imageUtils.process_file(filename)
+            dbname = os.path.basename(self.path_root)+".db"
+            conn = sqlite3.connect(dbname)
+            cursor = conn.cursor()
+            similarity = str(12345)
+            cursor.execute("INSERT INTO " + "PIC" + "(NAME,FILEPATH,FILESIZE,MD5,SIMILARITY) VALUES (?,?,?,?,?)",(file_name,dir_path,file_size,file_md5,similarity))
+            print("Inserting into database",entries)
+            conn.commit()
 
 
-if __name__ == "__main__":
+def startObserver(path):
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--path', type=str,help="Path to observe")
-    args = parser.parse_args()
-    path = args.path
     path_ending = os.path.basename(path)
-
     event_handler = Renamer(path_ending)
     observer = Observer()
     observer.schedule(event_handler,path,recursive=True)
