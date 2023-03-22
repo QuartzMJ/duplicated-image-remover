@@ -24,10 +24,10 @@ def create_table(conn,table):
      print("Database created!")
      # execute queries on the new database
 
-def detect_duplication(dbname):
+def detectDuplicationByMD5(dbname):
     conn = sqlite3.connect(dbname)
     cursor = conn.cursor()
-    query = "SELECT NAME, FILESIZE, MD5, COUNT(*) as count FROM PIC GROUP BY MD5 HAVING count > 1;"
+    query = "SELECT ID, FILEPATH, NAME, FILESIZE, MD5, COUNT(*) as count FROM PIC GROUP BY MD5 HAVING count > 1;"
     cursor.execute(query)
     result = cursor.fetchall()
  
@@ -37,6 +37,8 @@ def detect_duplication(dbname):
         print("Duplication counts: " + str(count))
         count += 1
     conn.close()
+    return result;
+    
 
 
 def check_existence(file_path,cursor):
@@ -44,6 +46,13 @@ def check_existence(file_path,cursor):
     file_path=os.path.dirname(file_path) 
     query = "SELECT COUNT(*) FROM PIC WHERE FILEPATH = ? AND NAME = ?"
     paras = (file_path,filename)
+    cursor.execute(query,paras)
+    count = cursor.fetchone()[0]
+    return count > 0
+
+def checkExistenceByMD5(md5,cursor):
+    query = "SELECT COUNT(*) FROM PIC WHRER MD5 = ?"
+    paras = (md5,)
     cursor.execute(query,paras)
     count = cursor.fetchone()[0]
     return count > 0
@@ -70,5 +79,19 @@ def checkColumnExistence(para,cursor):
         return True
 
 
-def delete_duplication():
-    print("Placeholder for deletion")
+def deleteDuplicationByMD5(result,dbname):
+    
+    conn = open_connection(dbname)
+    cursor = conn.cursor()
+    for file in result:
+        filePath = file[1] + '\\' + file[2]
+        print(filePath)
+        if os.path.exists(filePath):
+            os.remove(filePath)
+
+        id = int(file[0])
+        cursor.execute("DELETE FROM PIC WHERE ID = ?", (id,))
+        print("deleting...")
+        conn.commit()
+    conn.close()
+    

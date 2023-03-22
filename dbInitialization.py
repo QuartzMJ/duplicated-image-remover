@@ -2,6 +2,7 @@ import imageUtils
 import sqlConnector
 
 
+
 def initialize(dbname,base,table):
    
     conn = sqlConnector.open_connection(dbname)
@@ -24,4 +25,9 @@ def initialize(dbname,base,table):
             conn.commit()
     conn.close()
     print("Database %s initialized, %d files inserted." % (dbname,count))
+
+def removeDuplicationByMD5(dbname):
+    result = sqlConnector.detectDuplicationByMD5(dbname)
+    sqlConnector.deleteDuplicationByMD5(result,dbname)
+
 

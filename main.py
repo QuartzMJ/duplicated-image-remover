@@ -18,10 +18,11 @@ def main():
     
     ifInitial = args.initial_database
     path = args.input_folder
+    dbname = os.path.basename(path)+".db"
     if (ifInitial):
-        dbname = os.path.basename(path)+".db"
         table = "PIC"
         dbInitialization.initialize(dbname,path,table)
+    dbInitialization.removeDuplicationByMD5(dbname)
     FSobserver.startObserver(path)
 
 if __name__ == '__main__':

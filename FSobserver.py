@@ -7,6 +7,7 @@ import imageUtils
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 import reformatter 
+import sqlConnector
 
 class Renamer(LoggingEventHandler):
 
@@ -20,19 +21,22 @@ class Renamer(LoggingEventHandler):
             what = 'directory'
         else:
             what = 'file'
-        logging.info("Created %s: %s" % (what, event.src_path))
         extension = event.src_path.split('.')
-        if extension[-1] == "jpg" or extension[-1] == "png":
-            filename = reformatter.reformat(event.src_path,self.path_root)
-            time.sleep(2)
-            file_name,dir_path,file_size,file_md5 = entries = imageUtils.process_file(filename)
+        if extension[-1] == "jpg" or extension[-1] == "png" or extension[-1] == "jpeg":
+            filePath = reformatter.reformat(event.src_path,self.path_root)
+            file_name,dir_path,file_size,file_md5 = entries = imageUtils.process_file(filePath)
             dbname = os.path.basename(self.path_root)+".db"
-            conn = sqlite3.connect(dbname)
+            print(dbname)
+            conn = sqlConnector.open_connection(dbname)
             cursor = conn.cursor()
             similarity = str(12345)
-            cursor.execute("INSERT INTO " + "PIC" + "(NAME,FILEPATH,FILESIZE,MD5,SIMILARITY) VALUES (?,?,?,?,?)",(file_name,dir_path,file_size,file_md5,similarity))
-            print("Inserting into database",entries)
-            conn.commit()
+            if not sqlConnector.checkExistenceByMD5(file_md5):
+                cursor.execute("INSERT INTO " + "PIC" + "(NAME,FILEPATH,FILESIZE,MD5,SIMILARITY) VALUES (?,?,?,?,?)",(file_name,dir_path,file_size,file_md5,similarity))
+                print("Inserting into database",entries)
+                conn.commit()
+            else:
+                os.remove(dir_path + '\\' + file_name)
+            conn.close()
 
 
 def startObserver(path):
