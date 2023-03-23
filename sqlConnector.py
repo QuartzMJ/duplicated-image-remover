@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-def open_connection(dbname):
+def connect(dbname):
         # check if database file exists
     if os.path.isfile(dbname):
         conn = sqlite3.connect(dbname)
@@ -11,7 +11,7 @@ def open_connection(dbname):
         conn = sqlite3.connect(dbname) 
     return conn;
 
-def create_table(conn,table):
+def createTable(conn,table):
      cursor = conn.cursor()
      cursor.execute('''CREATE TABLE IF NOT EXISTS {}( 
      ID INTEGER PRIMARY KEY     AUTOINCREMENT,
@@ -41,7 +41,7 @@ def detectDuplicationByMD5(dbname):
     
 
 
-def check_existence(file_path,cursor):
+def checkExistenceByFilePath(file_path,cursor):
     filename=os.path.basename(file_path)
     file_path=os.path.dirname(file_path) 
     query = "SELECT COUNT(*) FROM PIC WHERE FILEPATH = ? AND NAME = ?"
@@ -81,7 +81,7 @@ def checkColumnExistence(para,cursor):
 
 def deleteDuplicationByMD5(result,dbname):
     
-    conn = open_connection(dbname)
+    conn = connect(dbname)
     cursor = conn.cursor()
     for file in result:
         filePath = file[1] + '\\' + file[2]

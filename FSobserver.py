@@ -14,29 +14,31 @@ class Renamer(LoggingEventHandler):
     def __init__(self,path_root):
         super(Renamer, self).__init__()
         self.path_root = path_root
+        self.dbname  = os.path.basename(self.path_root)+".db"
+        self.conn = sqlConnector.connect(self.dbname)
+        self.cursor = self.conn.cursor()
 
     def on_created(self,event):
         super(LoggingEventHandler,self).on_created(event)
-        if event.is_directory:
-            what = 'directory'
-        else:
-            what = 'file'
+        time.sleep(4)
         extension = event.src_path.split('.')
+        print("inside of the observer")
+        print(extension[-1])
         if extension[-1] == "jpg" or extension[-1] == "png" or extension[-1] == "jpeg":
+            print("running")
             filePath = reformatter.reformat(event.src_path,self.path_root)
-            file_name,dir_path,file_size,file_md5 = entries = imageUtils.process_file(filePath)
-            dbname = os.path.basename(self.path_root)+".db"
-            print(dbname)
-            conn = sqlConnector.open_connection(dbname)
-            cursor = conn.cursor()
+            file_name,dir_path,file_size,file_md5 = entries = imageUtils.processFile(filePath)    
             similarity = str(12345)
+            print (file_md5)
             if not sqlConnector.checkExistenceByMD5(file_md5):
-                cursor.execute("INSERT INTO " + "PIC" + "(NAME,FILEPATH,FILESIZE,MD5,SIMILARITY) VALUES (?,?,?,?,?)",(file_name,dir_path,file_size,file_md5,similarity))
+                self.cursor.execute("INSERT INTO " + "PIC" + "(NAME,FILEPATH,FILESIZE,MD5,SIMILARITY) VALUES (?,?,?,?,?)",(file_name,dir_path,file_size,file_md5,similarity))
                 print("Inserting into database",entries)
-                conn.commit()
+                self.conn.commit()
             else:
-                os.remove(dir_path + '\\' + file_name)
-            conn.close()
+                target = dir_path + '\\' + file_name
+                os.remove(target)
+                print(target + " deleted")
+            
 
 
 def startObserver(path):
